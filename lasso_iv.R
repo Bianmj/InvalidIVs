@@ -35,9 +35,9 @@ fit2sls<- function(Y,X,G){
   }
 
 
-#Get the the G-X and G-Y association estimates and their standard errors by linear regression
+#Get the G-X and G-Y association estimates and their standard errors by linear regression
 #X and Y are the exposure and outcome variables, and G is the matrix for genetic variants
-#outputs: bx is a vector for the estimate for G-X association; by is a vector for the estimate for G-Y association;
+#outputs: bx is a vector for the estimate of G-X association; by is a vector for the estimate of G-Y association;
 #se_x is a vector for the standard error of bx; se_y is a vector the standard error of by 
 est <- function(X,Y,G){
   M = ncol(G); n = nrow(G)
@@ -61,7 +61,7 @@ est <- function(X,Y,G){
 
 
 
-#Apply Lasso method by conditional on the first-stage residuals to find the invalid IVs
+#Apply the Lasso method by conditional on the first-stage residuals, exposure (X) and genetic variants (G) to find the invalid IVs
 cv.my_alas <- function(Y,X,G){
   est_out <- est(X=X,Y=Y,G=G)
   se_y <- est_out[,4]; bx <- est_out[,1]; by <- est_out[,2]
@@ -75,19 +75,19 @@ cv.my_alas <- function(Y,X,G){
   res <- fs$resid
   xfitted <- fs$xfit
   #Apply the lasso regression, since X and first-stage residuals(res) are not penalized,
-  #so the penalty.factor is set to 0 for these two variables, and we only penalize the coefficient
-  # of each genetic variants, which represents the potential directional pleiotropy effect on the outcome Y
+  #so the penalty. factor is set to 0 for these two variables, and we only penalize the coefficient
+  # of each genetic variant, which represents the potential directional pleiotropy effect on the outcome Y
   # The basic idea is to identify those invalid IVs with coefficients not equal to zero. 
   las_fit = glmnet(cbind(X,res,G),Y,penalty.factor=c(rep(0,2),rep(1,M)),intercept = FALSE)
   lamb = las_fit$lambda
   lamseq = sort(lamb)
   lamlen = length(lamseq)
   rse =c()
-  # Applying the heterogeneity stopping rule 
+  # Applying the heterogeneity-stopping rule 
   # In glmnet, lambda values are arranged in a descending sequence. 
   # As a result, we analyze the shrinkage result from the final lambda, which holds the highest numerical value. 
   # The model corresponding to the highest lambda value will encompass the maximum count of valid IVs, 
-  # while as lambda values decrease, the count of invalid IVs tends to increase..
+  # while as lambda values decrease, the count of invalid IVs tends to increase.
   for (i in 1:lamlen){
     av = which(las_fit$beta[-c(1,2), (lamlen - i + 1)] == 0)
     # we will only consider the models with greater than 2 IVs.
@@ -127,7 +127,7 @@ cv.my_alas <- function(Y,X,G){
 
 
 #Perform bootstrap procedure to get the bootstrap estimate of causal effect
-#B is the number of bootstraps, and train is number of observations for within-sample bootstrap
+#B is the number of bootstraps, and train is the number of observations for within-sample bootstrap
 Boot.las <- function(X,Y,G,train,B){
   n = nrow(G)
   boot.est = rep(0,B)
