@@ -1,3 +1,4 @@
+library(glmnet)
 #Obtain the first-stage residuals and fitted value of X
 #X is the exposure and G is the matrix for genetic variants
 firststage <- function(X,G){
